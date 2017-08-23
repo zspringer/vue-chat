@@ -20,6 +20,10 @@
 				</div>
 			</div>
 			<div class="text-center">
+				<input type="text" max="12" class="form-control input-lg text-center" placeholder="Message" v-model="message">
+			</div>
+			<div class="text-center">
+				<button class="btn btn-primary btn-lg" type="button" @click="send">Send</button>
 				<button class="btn btn-primary btn-lg" type="button" @click="leave">Leave Chat</button>
 			</div>
 		</div>
@@ -33,7 +37,8 @@
 		name: 'app',
 		data: function () {
 			return {
-				name: ''
+				name: '',
+				message: ''
 			}
 		},
 		computed: mapState({
@@ -52,17 +57,24 @@
 				}
 			},
 			leave: function () {
-
+				this.$store.dispatch('setJoined', false);
+				this.$store.dispatch('clearMessages');
+				this.$socket.emit('leave');
 			},
 			send: function (message) {
 				if (message) {
-					this.$socket.emit('message', message);
+					this.$socket.emit('message', this.message);
+					this.message = '';
 				}
 			}
 		},
 		sockets: {
 			user: function (name) {
 				var data = { user: name, message: 'Has joined the chat.' };
+				this.$store.dispatch('addMessage', data);
+			},
+			left: function(name){
+				var data = { user: name, message: "has left the chat."};
 				this.$store.dispatch('addMessage', data);
 			},
 			message: function (data) {
@@ -107,6 +119,9 @@
 		border-radius: 6px;
 		padding: 10px;
 		margin-bottom: 10px;
+		max-height: 500px;
+		overflow-y: auto;
+		overflow-x: hidden;
 	}
 
 	.name {

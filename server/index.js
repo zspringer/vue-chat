@@ -23,10 +23,18 @@ io.on('connection', function (socket) {
 		}	
 	});
 
+	socket.on('leave', function(){
+		io.to('BCW').emit('left', socket.user )
+	})
+
 	socket.on('message', function (text) {
 		if (text) {
 			io.to('BCW').emit('message', { user: socket.user, message: text });
 		}	
 	});
+
+	socket.on('disconnect', (reason) => {
+		io.to('BCW').emit('left', socket.user);
+	})
 
 });
