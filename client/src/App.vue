@@ -82,7 +82,7 @@
 				if (linkChecker == true) {
 					this.userMessage.type = 'link';
 				}
-				if (fileExtension === 'jpg' || fileExtension === 'png' || fileExtension === 'gif') {
+				if (fileExtension === 'jpg' || fileExtension === 'png' || fileExtension === 'gif' || fileExtension === 'jpeg') {
 					this.userMessage.type = 'image'
 				}
 				else { this.imageTag = false }
