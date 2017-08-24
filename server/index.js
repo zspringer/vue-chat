@@ -11,30 +11,34 @@ server.listen(port, function () {
 });
 
 io.on('connection', function (socket) {
+	var currentRoom = ''
+	
+	socket.on('join', function (data) {
+		if (data.name) {
+			currentRoom = data.roomName
+			socket.join(data.roomName, function () {
+				
+					});
 
-	socket.join('BCW', function () {
-		
-	});
-
-	socket.on('join', function (name) {
-		if (name) {
-			socket.user = name;
-			io.to('BCW').emit('user', name);
+			socket.user = data.name;
+			socket.room = data.roomName;
+			io.to(data.roomName).emit('user', data.name);
 		}	
 	});
 
 	socket.on('leave', function(){
-		io.to('BCW').emit('left', socket.user )
+		io.to(currentRoom).emit('left', socket.user )
 	})
 
-	socket.on('message', function (text) {
-		if (text) {
-			io.to('BCW').emit('message', { user: socket.user, message: text });
+	socket.on('message', function (data) {
+		if (data) {
+			data.user = socket.users
+			io.to(data.roomName).emit('message', data);
 		}	
 	});
 
 	socket.on('disconnect', (reason) => {
-		io.to('BCW').emit('left', socket.user);
+		io.to(currentRoom).emit('left', socket.user);
 	})
-
 });
+	

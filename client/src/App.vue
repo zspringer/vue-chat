@@ -1,7 +1,10 @@
 <template>
 	<div>
 		<div v-if="!joined" class="text-center">
-			<form>
+			<form @submit.prevent>
+				<button @click="setRoom('Cool Room')">Cool Room</button>
+				<!-- <button>Cool Room</button>
+				<button>Cool Room</button> -->
 				<div class="form-group">
 					<input type="text" max="12" class="form-control input-lg text-center" placeholder="Name" v-model="name">
 				</div>
@@ -13,14 +16,17 @@
 				<div class="row" v-for="item in messages">
 					<div class="col-sm-2 text-right">
 						<span class="name">{{ item.user }}</span>
+
 					</div>
 					<div class="col-sm-10">
-						<span class="message">{{ item.message }}</span>
+						<a v-if="item.type === 'link'" rel="stylesheet" :href="item.message">{{item.message}}</a>
+						<img v-else-if="item.type === 'image'" :src="item.message" alt="">
+						<p v-else class="message"> {{ item.message }}</p>
 					</div>
 				</div>
 			</div>
 			<div class="text-center">
-				<input type="text" max="12" class="form-control input-lg text-center" placeholder="Message" v-model="message">
+				<input type="text" max="12" class="form-control input-lg text-center" placeholder="Message" v-model="userMessage.message">
 			</div>
 			<div class="text-center">
 				<button class="btn btn-primary btn-lg" type="button" @click="send">Send</button>
@@ -37,8 +43,12 @@
 		name: 'app',
 		data: function () {
 			return {
+				roomName: '',
 				name: '',
-				message: ''
+				userMessage: {
+					message: '',
+					type: 'message'
+				}
 			}
 		},
 		computed: mapState({
@@ -50,10 +60,14 @@
 			}
 		}),
 		methods: {
+			setRoom: function(room){
+				this.roomName = room
+				console.log(this.roomName)
+			},
 			join: function () {
 				if (this.name) {
 					this.$store.dispatch('setJoined', true);
-					this.$socket.emit('join', this.name);
+					this.$socket.emit('join', {name:this.name, room:this.roomName});
 				}
 			},
 			leave: function () {
@@ -62,10 +76,25 @@
 				this.$socket.emit('leave');
 			},
 			send: function (message) {
-				if (message) {
-					this.$socket.emit('message', this.message);
-					this.message = '';
+				var fileExtension = this.userMessage.message.substr((this.userMessage.message.lastIndexOf('.') + 1))
+				var linkChecker = this.userMessage.message.includes("http" || "https")
+				if (linkChecker == true) {
+					this.userMessage.type = 'link';
 				}
+				if (fileExtension === 'jpg' || fileExtension === 'png' || fileExtension === 'gif') {
+					this.userMessage.type = 'image'
+				}
+				else { this.imageTag = false }
+				if (this.userMessage) {
+					this.$socket.emit('message', this.userMessage);
+				}
+				this.userMessage = {
+					message: '',
+					type: 'message'
+				}
+			},
+			clear: function (data) {
+				this.$store.dispatch('clearMessages');
 			}
 		},
 		sockets: {
@@ -73,8 +102,8 @@
 				var data = { user: name, message: 'Has joined the chat.' };
 				this.$store.dispatch('addMessage', data);
 			},
-			left: function(name){
-				var data = { user: name, message: "has left the chat."};
+			left: function (name) {
+				var data = { user: name, message: "has left the chat." };
 				this.$store.dispatch('addMessage', data);
 			},
 			message: function (data) {
