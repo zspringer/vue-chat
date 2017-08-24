@@ -3,6 +3,7 @@
 		<div v-if="!joined" class="text-center">
 			<form @submit.prevent>
 				<button @click="setRoom('Cool Room')">Cool Room</button>
+				<button @click="setRoom('Rad Room')">Rad Room</button>
 				<!-- <button>Cool Room</button>
 				<button>Cool Room</button> -->
 				<div class="form-group">

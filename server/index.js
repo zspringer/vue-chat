@@ -15,14 +15,15 @@ io.on('connection', function (socket) {
 	
 	socket.on('join', function (data) {
 		if (data.name) {
-			currentRoom = data.roomName
-			socket.join(data.roomName, function () {
+			currentRoom = data.room
+			socket.join(data.room, function () {
 				
 					});
 
 			socket.user = data.name;
-			socket.room = data.roomName;
-			io.to(data.roomName).emit('user', data.name);
+			socket.room = data.room;
+			console.log(data.room)
+			io.to(data.room).emit('user', data.name);
 		}	
 	});
 
@@ -32,8 +33,9 @@ io.on('connection', function (socket) {
 
 	socket.on('message', function (data) {
 		if (data) {
-			data.user = socket.users
-			io.to(data.roomName).emit('message', data);
+			data.user = socket.user
+			console.log(data.message)
+			io.to(currentRoom).emit('message', data);
 		}	
 	});
 
